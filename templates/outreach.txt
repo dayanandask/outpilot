@@ -3,4 +3,4 @@ Quick question for ${first_name} at ${company_name}
 I noticed your role as ${title} at ${domain}. Many teams in your space are spending 5+ hours a week on manual prospecting, which slows down growth. Our platform automates sourcing, enrichment, and outreach end-to-end. Would a 15-minute call this week make sense?
 
 Best,
-${from_name:-[Your Name]}
+[Your Name]
