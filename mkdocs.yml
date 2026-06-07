@@ -1,0 +1,26 @@
+site_name: Outreach Pipeline
+docs_dir: docs
+repo_url: https://github.com/outpilot/outreach-pipeline
+
+theme:
+  name: material
+  palette:
+    scheme: default
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - API Integration: api_integration.md
+  - Runbook: runbook.md

@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install ruff
+      - run: ruff check src/ tests/
+      - run: ruff format --check src/ tests/
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install mypy
+      - run: mypy src/ --strict
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install bandit pip-audit
+      - run: bandit -r src/ -ll
+      - run: pip-audit
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install pytest pytest-asyncio respx pytest-cov aiosqlite sqlmodel pydantic pydantic-settings python-dotenv tenacity structlog email-validator httpx anyio typer rich
+      - run: pytest tests/ --cov=src --cov-report=xml --cov-fail-under=85
+    env:
+      APOLLO_API_KEY: dummy_key_for_tests
+      PROSPEO_API_KEY: dummy_key_for_tests
+      BREVO_API_KEY: dummy_key_for_tests
+      FROM_EMAIL: test@example.com
+      FROM_NAME: Test
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install mkdocs mkdocstrings mkdocstrings-python mkdocs-material
+      - run: mkdocs build --strict
