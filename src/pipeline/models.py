@@ -35,6 +35,7 @@ class Prospect(BaseModel):
     full_name: str
     title: str
     linkedin_url: str
+    apollo_email: str | None = None
 
     @field_validator("company_domain")
     @classmethod
@@ -74,6 +75,7 @@ class Contact(BaseModel):
     prospect: Prospect
     work_email: EmailStr
     verified: bool
+    source: str = "apollo"
 
 
 class OutreachRecord(BaseModel):

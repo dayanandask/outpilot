@@ -5,7 +5,7 @@ from pydantic import Field, field_validator, EmailStr
 
 class Settings(BaseSettings):
     apollo_api_key: str = Field(alias="APOLLO_API_KEY")
-    eazyreach_api_key: str = Field(alias="EAZYREACH_API_KEY")
+    prospeo_api_key: str = Field(alias="PROSPEO_API_KEY")
     brevo_api_key: str = Field(alias="BREVO_API_KEY")
 
     from_email: EmailStr = Field(alias="FROM_EMAIL")
@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     max_prospects_per_domain: int = Field(default=3, alias="MAX_PROSPECTS_PER_DOMAIN")
     daily_email_cap: int = Field(default=100, alias="DAILY_EMAIL_CAP")
     apollo_rpm: int = Field(default=200, alias="APOLLO_RPM")
-    eazyreach_rpm: int = Field(default=10, alias="EAZYREACH_RPM")
+    prospeo_rpm: int = Field(default=10, alias="PROSPEO_RPM")
 
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     log_pii: bool = Field(default=False, alias="LOG_PII")
@@ -27,7 +27,7 @@ class Settings(BaseSettings):
         populate_by_name=True,
     )
 
-    @field_validator("apollo_api_key", "eazyreach_api_key", "brevo_api_key")
+    @field_validator("apollo_api_key", "prospeo_api_key", "brevo_api_key")
     @classmethod
     def validate_keys(cls, v: str) -> str:
         if not v or not v.strip():

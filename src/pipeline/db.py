@@ -94,7 +94,7 @@ class DatabaseManager:
         """Creates or registers a new run in the database."""
         async with self.async_session_maker() as session:
             # Check if run already exists
-            statement = select(Run).where(Run.run_id == self.run_id)  # type: ignore[arg-type]
+            statement = select(Run).where(Run.run_id == self.run_id)
             result = await session.exec(statement)
             run = result.one_or_none()
             if not run:
@@ -109,7 +109,7 @@ class DatabaseManager:
     ) -> None:
         """Updates status of the main run record."""
         async with self.async_session_maker() as session:
-            statement = select(Run).where(Run.run_id == self.run_id)  # type: ignore[arg-type]
+            statement = select(Run).where(Run.run_id == self.run_id)
             result = await session.exec(statement)
             run = result.one_or_none()
             if run:
@@ -122,7 +122,7 @@ class DatabaseManager:
     async def get_companies(self) -> List[CompanyRecord]:
         """Fetches all companies retrieved in the current run."""
         async with self.async_session_maker() as session:
-            statement = select(CompanyRecord).where(CompanyRecord.run_id == self.run_id)  # type: ignore[arg-type]
+            statement = select(CompanyRecord).where(CompanyRecord.run_id == self.run_id)
             result = await session.exec(statement)
             return list(result.all())
 
@@ -138,7 +138,7 @@ class DatabaseManager:
         """Fetches all prospects discovered in the current run."""
         async with self.async_session_maker() as session:
             statement = select(ProspectRecord).where(
-                ProspectRecord.run_id == self.run_id  # type: ignore[arg-type]
+                ProspectRecord.run_id == self.run_id
             )
             result = await session.exec(statement)
             return list(result.all())
@@ -154,7 +154,7 @@ class DatabaseManager:
     async def get_contacts(self) -> List[ContactRecord]:
         """Fetches all contacts resolved in the current run."""
         async with self.async_session_maker() as session:
-            statement = select(ContactRecord).where(ContactRecord.run_id == self.run_id)  # type: ignore[arg-type]
+            statement = select(ContactRecord).where(ContactRecord.run_id == self.run_id)
             result = await session.exec(statement)
             return list(result.all())
 
@@ -170,7 +170,7 @@ class DatabaseManager:
         """Fetches all outreach records from the current run."""
         async with self.async_session_maker() as session:
             statement = select(OutreachRecordTable).where(
-                OutreachRecordTable.run_id == self.run_id  # type: ignore[arg-type]
+                OutreachRecordTable.run_id == self.run_id
             )
             result = await session.exec(statement)
             return list(result.all())
