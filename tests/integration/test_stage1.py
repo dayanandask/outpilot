@@ -209,7 +209,9 @@ async def test_apollo_stage_skips_person_without_name() -> None:
     respx.post("https://api.apollo.io/v1/organizations/search").mock(
         return_value=Response(
             200,
-            json={"organizations": [{"name": "NoNameCorp", "domain": "nonamecorp.com"}]},
+            json={
+                "organizations": [{"name": "NoNameCorp", "domain": "nonamecorp.com"}]
+            },
         )
     )
     respx.post("https://api.apollo.io/v1/mixed_people/search").mock(
