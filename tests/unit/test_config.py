@@ -50,7 +50,8 @@ def test_settings_non_retryable_http_status(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setenv("BREVO_API_KEY", "c" * 20)
     monkeypatch.setenv("FROM_EMAIL", "test@example.com")
     monkeypatch.setenv("FROM_NAME", "Test")
-    settings = Settings()
+    Settings()
     from pipeline.models import SeedInput
+
     with pytest.raises(Exception):
         SeedInput(domain="not-a-domain")
