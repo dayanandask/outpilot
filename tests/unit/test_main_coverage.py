@@ -1,4 +1,4 @@
-from pipeline.main import _render_checkpoint, _mask
+from pipeline.main import _render_checkpoint
 from pipeline.models import Prospect, Contact
 
 
