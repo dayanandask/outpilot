@@ -41,3 +41,16 @@ def test_settings_short_key_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("FROM_NAME", "Test")
     with pytest.raises(ValidationError):
         Settings()
+
+
+def test_settings_non_retryable_http_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Config validator rejects malformed domain via SeedInput, not Settings."""
+    monkeypatch.setenv("APOLLO_API_KEY", "a" * 20)
+    monkeypatch.setenv("PROSPEO_API_KEY", "b" * 20)
+    monkeypatch.setenv("BREVO_API_KEY", "c" * 20)
+    monkeypatch.setenv("FROM_EMAIL", "test@example.com")
+    monkeypatch.setenv("FROM_NAME", "Test")
+    settings = Settings()
+    from pipeline.models import SeedInput
+    with pytest.raises(Exception):
+        SeedInput(domain="not-a-domain")
