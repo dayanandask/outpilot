@@ -57,7 +57,16 @@ async def test_apollo_stage_falls_back_to_prospeo() -> None:
     respx.post("https://api.prospeo.io/search-person").mock(
         return_value=Response(
             200,
-            json={"people": [{"name": "Priya Nair", "title": "CTO", "linkedin_url": "https://linkedin.com/in/priya", "id": "prospeo_1"}]},
+            json={
+                "people": [
+                    {
+                        "name": "Priya Nair",
+                        "title": "CTO",
+                        "linkedin_url": "https://linkedin.com/in/priya",
+                        "id": "prospeo_1",
+                    }
+                ]
+            },
         )
     )
 

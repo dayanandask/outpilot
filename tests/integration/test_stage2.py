@@ -19,10 +19,19 @@ def prospect() -> Prospect:
 @respx.mock
 async def test_email_stage_prospeo_fallback(prospect: Prospect) -> None:
     respx.post("https://api.prospeo.io/search-person").mock(
-        return_value=Response(200, json={"people": [{"full_name": "Jane Doe", "id": "prospeo_1"}]})
+        return_value=Response(
+            200, json={"people": [{"full_name": "Jane Doe", "id": "prospeo_1"}]}
+        )
     )
     respx.post("https://api.prospeo.io/enrich-person").mock(
-        return_value=Response(200, json={"person": {"email": {"value": "jane@example.com", "type": "professional"}}})
+        return_value=Response(
+            200,
+            json={
+                "person": {
+                    "email": {"value": "jane@example.com", "type": "professional"}
+                }
+            },
+        )
     )
 
     stage = EmailStage()
@@ -60,10 +69,19 @@ async def test_email_stage_deduplicates(prospect: Prospect) -> None:
     )
 
     respx.post("https://api.prospeo.io/search-person").mock(
-        return_value=Response(200, json={"people": [{"full_name": "Jane Doe", "id": "prospeo_1"}]})
+        return_value=Response(
+            200, json={"people": [{"full_name": "Jane Doe", "id": "prospeo_1"}]}
+        )
     )
     respx.post("https://api.prospeo.io/enrich-person").mock(
-        return_value=Response(200, json={"person": {"email": {"value": "jane@example.com", "type": "professional"}}})
+        return_value=Response(
+            200,
+            json={
+                "person": {
+                    "email": {"value": "jane@example.com", "type": "professional"}
+                }
+            },
+        )
     )
 
     stage = EmailStage()
@@ -80,7 +98,9 @@ async def test_email_stage_partial_failure(prospect: Prospect) -> None:
     from unittest.mock import patch
 
     stage = EmailStage()
-    with patch.object(stage.client, "search_person", side_effect=Exception("network error")):
+    with patch.object(
+        stage.client, "search_person", side_effect=Exception("network error")
+    ):
         contacts = await stage.execute([prospect])
 
     assert contacts == []

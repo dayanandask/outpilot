@@ -12,13 +12,18 @@ from pipeline.utils.rate_limiter import get_rate_limiter
 
 logger = structlog.get_logger(__name__)
 
+
 class AuthError(Exception):
     """Raised when an API returns 401 or 403."""
+
     pass
+
 
 class RateLimitError(Exception):
     """Raised when retries are exhausted for 429 responses."""
+
     pass
+
 
 class BaseAPIClient:
     """Base HTTP client with retry, rate limiting, and structured logging."""
@@ -59,7 +64,10 @@ class BaseAPIClient:
         """Checks for Retry-After header and sleeps if necessary."""
         if retry_state.outcome and retry_state.outcome.failed:
             exc = retry_state.outcome.exception()
-            if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 429:
+            if (
+                isinstance(exc, httpx.HTTPStatusError)
+                and exc.response.status_code == 429
+            ):
                 retry_after = exc.response.headers.get("Retry-After")
                 if retry_after:
                     wait_time = int(retry_after)
@@ -75,7 +83,7 @@ class BaseAPIClient:
     ) -> httpx.Response:
         """Executes an HTTP request with rate limiting and retries."""
         await self.rate_limiter.acquire()
-        
+
         async for attempt in AsyncRetrying(
             stop=stop_after_attempt(3),
             wait=wait_exponential_jitter(initial=1, max=4, exp_base=2, jitter=1),
@@ -91,7 +99,7 @@ class BaseAPIClient:
                 except httpx.HTTPStatusError as e:
                     elapsed_ms = int((time.monotonic() - start_time) * 1000)
                     status = e.response.status_code
-                    
+
                     if status in (401, 403):
                         logger.error(
                             "auth_failed",
@@ -101,8 +109,10 @@ class BaseAPIClient:
                             status=status,
                             elapsed_ms=elapsed_ms,
                         )
-                        raise AuthError(f"Authentication failed: {status} - {e.response.text}") from e
-                        
+                        raise AuthError(
+                            f"Authentication failed: {status} - {e.response.text}"
+                        ) from e
+
                     logger.error(
                         "api_request_failed",
                         stage=self.stage_name,
@@ -123,7 +133,7 @@ class BaseAPIClient:
                         elapsed_ms=elapsed_ms,
                     )
                     raise
-                
+
                 elapsed_ms = int((time.monotonic() - start_time) * 1000)
                 logger.info(
                     "api_request_success",

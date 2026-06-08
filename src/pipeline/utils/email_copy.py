@@ -17,7 +17,9 @@ class EmailTemplateEngine:
             content = f.read()
         self._template = string.Template(content)
 
-    def render(self, contact: Contact, company_name: Optional[str] = None) -> Dict[str, Any]:
+    def render(
+        self, contact: Contact, company_name: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Renders the email template with contact data.
 
         Args:
@@ -32,7 +34,9 @@ class EmailTemplateEngine:
         """
         first_name = contact.prospect.full_name.split()[0]
         domain = contact.prospect.company_domain
-        display_company = company_name or domain.replace(".com", "").replace(".io", "").capitalize()
+        display_company = (
+            company_name or domain.replace(".com", "").replace(".io", "").capitalize()
+        )
 
         mapping = {
             "first_name": first_name,

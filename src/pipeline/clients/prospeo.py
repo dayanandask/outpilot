@@ -17,9 +17,22 @@ class ProspeoClient(BaseAPIClient):
             },
         )
 
-    async def search_person(self, domain: str, title_keywords: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+    async def search_person(
+        self, domain: str, title_keywords: Optional[List[str]] = None
+    ) -> List[Dict[str, Any]]:
         """Search for people at a company domain by title keywords."""
-        title_keywords = title_keywords or ["CEO", "CTO", "CFO", "COO", "CMO", "CPO", "VP", "Vice President", "Director", "Head"]
+        title_keywords = title_keywords or [
+            "CEO",
+            "CTO",
+            "CFO",
+            "COO",
+            "CMO",
+            "CPO",
+            "VP",
+            "Vice President",
+            "Director",
+            "Head",
+        ]
         payload = {
             "company_domain": domain,
             "title_keywords": title_keywords,

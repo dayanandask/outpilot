@@ -9,7 +9,10 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
-TITLE_REGEX = re.compile(r'\b(CEO|CTO|CFO|COO|CMO|CPO|VP|Vice President|Director|Head)\b', re.IGNORECASE)
+TITLE_REGEX = re.compile(
+    r"\b(CEO|CTO|CFO|COO|CMO|CPO|VP|Vice President|Director|Head)\b", re.IGNORECASE
+)
+
 
 class ApolloStage(BaseStage):
     name = "apollo"
@@ -18,13 +21,17 @@ class ApolloStage(BaseStage):
         self.apollo = ApolloClient()
         self.prospeo = ProspeoClient()
 
-    async def run(self, inputs: List[SeedInput]) -> Tuple[List[Company], List[Prospect]]:
+    async def run(
+        self, inputs: List[SeedInput]
+    ) -> Tuple[List[Company], List[Prospect]]:
         all_companies: List[Company] = []
         all_prospects: List[Prospect] = []
 
         for seed in inputs:
             try:
-                orgs = await self.apollo.search_organizations(seed.domain, max_results=settings.max_lookalikes)
+                orgs = await self.apollo.search_organizations(
+                    seed.domain, max_results=settings.max_lookalikes
+                )
                 if not orgs:
                     logger.warning("no_organization_found", domain=seed.domain)
                     continue
@@ -48,10 +55,16 @@ class ApolloStage(BaseStage):
                     )
                     # Fallback to Prospeo if Apollo fails (e.g. 403 on free tier)
                     try:
-                        logger.info("falling_back_to_prospeo_for_people", domain=seed.domain)
+                        logger.info(
+                            "falling_back_to_prospeo_for_people", domain=seed.domain
+                        )
                         people = await self.prospeo.search_person(seed.domain)
                     except Exception as prospeo_err:
-                        logger.warning("prospeo_people_search_failed", domain=seed.domain, error=str(prospeo_err))
+                        logger.warning(
+                            "prospeo_people_search_failed",
+                            domain=seed.domain,
+                            error=str(prospeo_err),
+                        )
                         continue
 
                 prospects_found = 0
@@ -64,7 +77,11 @@ class ApolloStage(BaseStage):
                     if not title or not TITLE_REGEX.search(title):
                         continue
 
-                    full_name = person.get("name") or person.get("full_name") or f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+                    full_name = (
+                        person.get("name")
+                        or person.get("full_name")
+                        or f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+                    )
                     if not full_name:
                         continue
 

@@ -32,11 +32,14 @@ class EmailStage(BaseStage):
                     people = await self.client.search_person(prospect.company_domain)
                     person_id = None
                     for person in people:
-                        full_name = person.get("full_name") or f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+                        full_name = (
+                            person.get("full_name")
+                            or f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+                        )
                         if full_name.lower() == prospect.full_name.lower():
                             person_id = person.get("id")
                             break
-                    
+
                     if person_id:
                         enriched = await self.client.enrich_person(person_id)
                         if enriched:
@@ -62,7 +65,11 @@ class EmailStage(BaseStage):
                     )
                 )
             except Exception as e:
-                logger.warning("email_resolution_failed", full_name=prospect.full_name, error=str(e))
+                logger.warning(
+                    "email_resolution_failed",
+                    full_name=prospect.full_name,
+                    error=str(e),
+                )
                 await self.on_error(prospect, e)
 
         return contacts

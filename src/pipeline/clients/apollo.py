@@ -2,6 +2,7 @@ from typing import Any, Dict, List
 from pipeline.clients.base import BaseAPIClient
 from pipeline.config import settings
 
+
 class ApolloClient(BaseAPIClient):
     """Client for Apollo.io API to search organizations and people."""
 
@@ -17,7 +18,9 @@ class ApolloClient(BaseAPIClient):
             },
         )
 
-    async def search_organizations(self, domain: str, max_results: int = 20) -> List[Dict[str, Any]]:
+    async def search_organizations(
+        self, domain: str, max_results: int = 20
+    ) -> List[Dict[str, Any]]:
         """Searches for organizations similar to domain."""
         payload = {
             "q_organization_domains": domain,

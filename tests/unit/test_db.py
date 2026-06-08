@@ -10,6 +10,7 @@ from pipeline.db import (
 
 import uuid
 
+
 @pytest.mark.asyncio
 async def test_db_lifecycle_and_persistence() -> None:
     run_id = f"test_run_{uuid.uuid4().hex}"

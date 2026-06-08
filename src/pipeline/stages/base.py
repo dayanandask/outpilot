@@ -4,6 +4,7 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
+
 class BaseStage(ABC):
     name: str
 
@@ -22,4 +23,6 @@ class BaseStage(ABC):
         pass
 
     async def on_error(self, item: Any, error: Exception) -> None:
-        logger.error("item_processing_failed", stage=self.name, item=str(item), error=str(error))
+        logger.error(
+            "item_processing_failed", stage=self.name, item=str(item), error=str(error)
+        )

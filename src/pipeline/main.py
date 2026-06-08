@@ -14,7 +14,13 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
 
 from pipeline.models import SeedInput, Company, Prospect, Contact
-from pipeline.db import DatabaseManager, Run, CompanyRecord, ProspectRecord, ContactRecord
+from pipeline.db import (
+    DatabaseManager,
+    Run,
+    CompanyRecord,
+    ProspectRecord,
+    ContactRecord,
+)
 from pipeline.stages.s1_apollo import ApolloStage
 from pipeline.stages.s2_email import EmailStage
 
@@ -71,7 +77,9 @@ def _model_to_contact_record(model: Contact, run_id: str) -> ContactRecord:
 
 
 def _render_checkpoint(contacts: List[Contact]) -> None:
-    console.print("\n[bold yellow]OUTREACH SUMMARY -- Review before sending[/bold yellow]\n")
+    console.print(
+        "\n[bold yellow]OUTREACH SUMMARY -- Review before sending[/bold yellow]\n"
+    )
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("Contact", style="cyan", no_wrap=False)
     table.add_column("Company", style="green")
@@ -88,9 +96,15 @@ def _render_checkpoint(contacts: List[Contact]) -> None:
 
 @app.command()
 def run(
-    domain: str = typer.Argument(..., help="Seed domain to start pipeline (e.g., stripe.com)"),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Run stages 1-3 only; skip sending emails"),
-    resume: Optional[str] = typer.Option(None, "--resume", help="Resume an existing run by run_id"),
+    domain: str = typer.Argument(
+        ..., help="Seed domain to start pipeline (e.g., stripe.com)"
+    ),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Run stages 1-3 only; skip sending emails"
+    ),
+    resume: Optional[str] = typer.Option(
+        None, "--resume", help="Resume an existing run by run_id"
+    ),
 ) -> None:
     """Run the full cold outreach pipeline."""
     asyncio.run(_run_pipeline(domain, dry_run, resume))
@@ -129,9 +143,15 @@ async def _run_pipeline(domain: str, dry_run: bool, resume: Optional[str]) -> No
 
         console.print(f"[dim]{stage1_label}[/dim]")
         companies, prospects = await stage1.execute([SeedInput(domain=seed_domain)])
-        console.print(f"[green]Stage 1 done[/green] -- {len(companies)} companies, {len(prospects)} prospects")
-        await db_manager.save_companies([_model_to_company_record(c, run_id) for c in companies])
-        await db_manager.save_prospects([_model_to_prospect_record(p, run_id) for p in prospects])
+        console.print(
+            f"[green]Stage 1 done[/green] -- {len(companies)} companies, {len(prospects)} prospects"
+        )
+        await db_manager.save_companies(
+            [_model_to_company_record(c, run_id) for c in companies]
+        )
+        await db_manager.save_prospects(
+            [_model_to_prospect_record(p, run_id) for p in prospects]
+        )
 
         if not prospects:
             console.print("[yellow]No prospects found. Pipeline complete.[/yellow]")
@@ -143,8 +163,12 @@ async def _run_pipeline(domain: str, dry_run: bool, resume: Optional[str]) -> No
 
         console.print(f"[dim]{stage2_label}[/dim]")
         contacts = await stage2.execute(prospects)
-        await db_manager.save_contacts([_model_to_contact_record(c, run_id) for c in contacts])
-        console.print(f"[green]Stage 2 done[/green] -- {len(contacts)} contacts resolved")
+        await db_manager.save_contacts(
+            [_model_to_contact_record(c, run_id) for c in contacts]
+        )
+        console.print(
+            f"[green]Stage 2 done[/green] -- {len(contacts)} contacts resolved"
+        )
 
         if not contacts:
             console.print("[yellow]No emails resolved. Pipeline complete.[/yellow]")
@@ -155,7 +179,9 @@ async def _run_pipeline(domain: str, dry_run: bool, resume: Optional[str]) -> No
             return
 
         if dry_run:
-            console.print("\n[bold green]Dry run complete. Contacts resolved:[/bold green]")
+            console.print(
+                "\n[bold green]Dry run complete. Contacts resolved:[/bold green]"
+            )
             _render_checkpoint(contacts)
             await db_manager.update_run_status("completed")
             await stage1.close()
@@ -164,7 +190,9 @@ async def _run_pipeline(domain: str, dry_run: bool, resume: Optional[str]) -> No
             return
 
         _render_checkpoint(contacts)
-        console.print("\n[bold yellow]Stage 3 (Brevo send) is not wired yet -- enable OutreachStage to send.[/bold yellow]")
+        console.print(
+            "\n[bold yellow]Stage 3 (Brevo send) is not wired yet -- enable OutreachStage to send.[/bold yellow]"
+        )
         console.print(f"\n[bold green]Pipeline complete![/bold green] Run ID: {run_id}")
         await db_manager.update_run_status("completed")
 
@@ -180,6 +208,7 @@ async def _show_status(run_id: str) -> None:
         await db_manager.initialize()
         async with await db_manager.get_session() as session:
             from sqlmodel import select
+
             stmt = select(Run).where(Run.run_id == run_id)
             result = await session.exec(stmt)
             run = result.one_or_none()
@@ -193,7 +222,9 @@ async def _show_status(run_id: str) -> None:
 
         console.print(f"Run ID: [bold cyan]{run.run_id}[/bold cyan]")
         console.print(f"Domain: [white]{run.seed_domain}[/white]")
-        console.print(f"Status: [bold]{run.status}[/bold] {STATUS_EMOJI.get(run.status, '')}")
+        console.print(
+            f"Status: [bold]{run.status}[/bold] {STATUS_EMOJI.get(run.status, '')}"
+        )
         console.print(f"Companies: {len(companies)}")
         console.print(f"Prospects: {len(prospects)}")
         console.print(f"Contacts: {len(contacts)}")
@@ -210,7 +241,9 @@ async def _list_runs() -> None:
         console.print("No runs directory found.")
         return
 
-    db_files = sorted(runs_dir.glob("*.db"), key=lambda p: p.stat().st_mtime, reverse=True)
+    db_files = sorted(
+        runs_dir.glob("*.db"), key=lambda p: p.stat().st_mtime, reverse=True
+    )
     table = Table(title="Pipeline Runs", show_edge=True)
     table.add_column("Run ID", style="cyan")
     table.add_column("Domain", style="white")
@@ -224,6 +257,7 @@ async def _list_runs() -> None:
             await db_manager.initialize()
             async with await db_manager.get_session() as session:
                 from sqlmodel import select
+
                 stmt = select(Run).where(Run.run_id == run_id)
                 result = await session.exec(stmt)
                 run = result.one_or_none()
