@@ -1,5 +1,9 @@
-from pipeline.main import _model_to_company_record, _model_to_prospect_record
-from pipeline.models import Company, Prospect
+from pipeline.main import (
+    _model_to_company_record,
+    _model_to_prospect_record,
+    _model_to_contact_record,
+)
+from pipeline.models import Company, Prospect, Contact
 
 
 def test_db_model_converters() -> None:
@@ -19,3 +23,8 @@ def test_db_model_converters() -> None:
     prec = _model_to_prospect_record(prospect, run_id)
     assert prec.full_name == "Jane Doe"
     assert prec.title == "CEO"
+
+    contact = Contact(prospect=prospect, work_email="jane@stripe.com", verified=True)
+    crec = _model_to_contact_record(contact, run_id)
+    assert crec.work_email == "jane@stripe.com"
+    assert crec.verified is True

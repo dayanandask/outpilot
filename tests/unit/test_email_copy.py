@@ -19,3 +19,20 @@ def test_engine_raises_when_template_missing(tmp_path: Path) -> None:
     missing = tmp_path / "outreach.txt"
     with pytest.raises(FileNotFoundError):
         EmailTemplateEngine(template_path=str(missing))
+
+
+def test_engine_render(contact: Contact) -> None:
+    engine = EmailTemplateEngine()
+    result = engine.render(contact)
+
+    assert "subject" in result
+    assert "body" in result
+    assert result["to"] == "jane@example.com"
+    assert result["name"] == "Jane Doe"
+
+
+def test_engine_render_with_company_name(contact: Contact) -> None:
+    engine = EmailTemplateEngine()
+    result = engine.render(contact, company_name="AcmeCorp")
+
+    assert result["body"] is not None

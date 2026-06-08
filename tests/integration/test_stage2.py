@@ -104,3 +104,49 @@ async def test_email_stage_partial_failure(prospect: Prospect) -> None:
         contacts = await stage.execute([prospect])
 
     assert contacts == []
+
+
+@pytest.mark.asyncio
+async def test_email_stage_uses_apollo_email() -> None:
+    prospect_with_email = Prospect(
+        company_domain="example.com",
+        full_name="Jane Doe",
+        title="Chief Executive Officer",
+        linkedin_url="https://www.linkedin.com/in/jane",
+        apollo_email="apollo@example.com",
+    )
+
+    stage = EmailStage()
+    contacts = await stage.execute([prospect_with_email])
+
+    assert len(contacts) == 1
+    assert contacts[0].work_email == "apollo@example.com"
+    assert contacts[0].source == "apollo"
+    await stage.close()
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_email_stage_duplicate_skipped_with_apollo_email() -> None:
+    prospect1 = Prospect(
+        company_domain="example.com",
+        full_name="Jane Doe",
+        title="Chief Executive Officer",
+        linkedin_url="https://www.linkedin.com/in/jane1",
+        apollo_email="shared@example.com",
+    )
+    prospect2 = Prospect(
+        company_domain="example.com",
+        full_name="John Doe",
+        title="CTO",
+        linkedin_url="https://www.linkedin.com/in/john1",
+        apollo_email="shared@example.com",
+    )
+
+    stage = EmailStage()
+    contacts = await stage.execute([prospect1, prospect2])
+
+    assert len(contacts) == 1
+    assert contacts[0].work_email == "shared@example.com"
+
+    await stage.close()

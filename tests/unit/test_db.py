@@ -5,6 +5,8 @@ from pipeline.db import (
     Run,
     CompanyRecord,
     ProspectRecord,
+    ContactRecord,
+    OutreachRecordTable,
 )
 
 
@@ -82,6 +84,57 @@ async def test_db_lifecycle_and_persistence() -> None:
 
     finally:
         # Close connection and cleanup db file
+        await db_manager.close()
+        try:
+            if os.path.exists(db_manager.db_path):
+                os.remove(db_manager.db_path)
+        except PermissionError:
+            pass
+
+
+@pytest.mark.asyncio
+async def test_db_contacts_and_outreach() -> None:
+    run_id = f"test_contacts_outreach_{uuid.uuid4().hex}"
+    db_manager = DatabaseManager(run_id)
+
+    try:
+        await db_manager.initialize()
+        await db_manager.create_run(seed_domain="outreach.com")
+
+        contacts = [
+            ContactRecord(
+                run_id=run_id,
+                linkedin_url="https://linkedin.com/in/jane",
+                full_name="Jane Doe",
+                title="CEO",
+                company_domain="outreach.com",
+                work_email="jane@outreach.com",
+                verified=True,
+                status="completed",
+            )
+        ]
+        await db_manager.save_contacts(contacts)
+
+        saved_contacts = await db_manager.get_contacts()
+        assert len(saved_contacts) == 1
+        assert saved_contacts[0].work_email == "jane@outreach.com"
+
+        outreach = [
+            OutreachRecordTable(
+                run_id=run_id,
+                work_email="jane@outreach.com",
+                email_subject="Test subject",
+                email_body="Test body",
+                status="sent",
+            )
+        ]
+        await db_manager.save_outreach_records(outreach)
+
+        saved_outreach = await db_manager.get_outreach_records()
+        assert len(saved_outreach) == 1
+        assert saved_outreach[0].email_subject == "Test subject"
+
+    finally:
         await db_manager.close()
         try:
             if os.path.exists(db_manager.db_path):

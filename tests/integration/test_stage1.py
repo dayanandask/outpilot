@@ -96,3 +96,64 @@ async def test_apollo_stage_empty_results() -> None:
     assert prospects == []
 
     await stage.close()
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_apollo_stage_both_people_searches_fail() -> None:
+    respx.post("https://api.apollo.io/v1/organizations/search").mock(
+        return_value=Response(
+            200,
+            json={"organizations": [{"name": "Acme", "domain": "acme.com"}]},
+        )
+    )
+    respx.post("https://api.apollo.io/v1/mixed_people/search").mock(
+        return_value=Response(403, json={"error": "blocked"})
+    )
+    respx.post("https://api.prospeo.io/search-person").mock(
+        return_value=Response(403, json={"error": "rate limited"})
+    )
+
+    stage = ApolloStage()
+    inputs = [SeedInput(domain="acme.com")]
+    companies, prospects = await stage.execute(inputs)
+
+    assert len(companies) == 1
+    assert prospects == []
+
+    await stage.close()
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_apollo_stage_skips_non_decision_makers() -> None:
+    respx.post("https://api.apollo.io/v1/organizations/search").mock(
+        return_value=Response(
+            200,
+            json={"organizations": [{"name": "Acme", "domain": "acme.com"}]},
+        )
+    )
+    respx.post("https://api.apollo.io/v1/mixed_people/search").mock(
+        return_value=Response(
+            200,
+            json={
+                "people": [
+                    {
+                        "name": "John Intern",
+                        "title": "Software Engineer Intern",
+                        "linkedin_url": "https://linkedin.com/in/john",
+                        "id": "person_1",
+                    }
+                ]
+            },
+        )
+    )
+
+    stage = ApolloStage()
+    inputs = [SeedInput(domain="acme.com")]
+    companies, prospects = await stage.execute(inputs)
+
+    assert len(companies) == 1
+    assert prospects == []
+
+    await stage.close()
