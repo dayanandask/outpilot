@@ -157,3 +157,83 @@ async def test_apollo_stage_skips_non_decision_makers() -> None:
     assert prospects == []
 
     await stage.close()
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_apollo_stage_respects_max_prospects_limit() -> None:
+    respx.post("https://api.apollo.io/v1/organizations/search").mock(
+        return_value=Response(
+            200,
+            json={"organizations": [{"name": "BigCorp", "domain": "bigcorp.com"}]},
+        )
+    )
+    respx.post("https://api.apollo.io/v1/mixed_people/search").mock(
+        return_value=Response(
+            200,
+            json={
+                "people": [
+                    {
+                        "name": "Person 1",
+                        "title": "CEO",
+                        "linkedin_url": "https://linkedin.com/in/p1",
+                    },
+                    {
+                        "name": "Person 2",
+                        "title": "CTO",
+                        "linkedin_url": "https://linkedin.com/in/p2",
+                    },
+                    {
+                        "name": "Person 3",
+                        "title": "CFO",
+                        "linkedin_url": "https://linkedin.com/in/p3",
+                    },
+                ]
+            },
+        )
+    )
+
+    stage = ApolloStage()
+    inputs = [SeedInput(domain="bigcorp.com")]
+    companies, prospects = await stage.execute(inputs)
+
+    assert len(companies) == 1
+    assert len(prospects) == 3
+
+    await stage.close()
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_apollo_stage_skips_person_without_name() -> None:
+    respx.post("https://api.apollo.io/v1/organizations/search").mock(
+        return_value=Response(
+            200,
+            json={"organizations": [{"name": "NoNameCorp", "domain": "nonamecorp.com"}]},
+        )
+    )
+    respx.post("https://api.apollo.io/v1/mixed_people/search").mock(
+        return_value=Response(
+            200,
+            json={
+                "people": [
+                    {
+                        "name": "",
+                        "first_name": "",
+                        "last_name": "",
+                        "title": "CEO",
+                        "linkedin_url": "https://linkedin.com/in/noname",
+                    }
+                ]
+            },
+        )
+    )
+
+    stage = ApolloStage()
+    inputs = [SeedInput(domain="nonamecorp.com")]
+    companies, prospects = await stage.execute(inputs)
+
+    assert len(companies) == 1
+    assert prospects == []
+
+    await stage.close()
