@@ -144,7 +144,7 @@ class BaseAPIClient:
                     elapsed_ms=elapsed_ms,
                 )
                 return response
-        raise Exception("Unreachable")
+        raise Exception("Unreachable")  # pragma: no cover
 
     async def close(self) -> None:
         await self.client.aclose()
